@@ -1,0 +1,10 @@
+services:
+  discogs_rec_model:
+      build: .
+      volumes:
+        - ./data:/data
+        - ./discogs_rec:/discogs_rec
+      environment:
+        PYTHONPATH: /discogs_rec
+      command: ["python", "main.py"]
+  
