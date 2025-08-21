@@ -32,13 +32,13 @@ def test_one_hot_encode_features():
     encoded = one_hot_encode_features(df)
 
     ohe = OneHotEncoder()
-    expected_countries = csr_matrix(ohe.fit_transform(df[["country"]])) * 0.5
+    expected_countries = csr_matrix(ohe.fit_transform(df[["country"]])) * 0.7
 
     np.testing.assert_array_equal(
         encoded["countries"].toarray(), expected_countries.toarray()
     )
 
-    expected_years = csr_matrix(ohe.fit_transform(df[["release_year"]])) * 0.9
+    expected_years = csr_matrix(ohe.fit_transform(df[["release_year"]])) * 1.0
     np.testing.assert_array_equal(encoded["year"].toarray(), expected_years.toarray())
 
 

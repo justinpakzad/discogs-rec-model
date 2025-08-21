@@ -2,17 +2,18 @@ import argparse
 import logging
 import pandas as pd
 from pathlib import Path
-from preprocessing import (
+from discogs_rec.preprocessing import (
     process_all_features,
     reduce_dimensionality,
     write_n_components,
     weights_dict,
 )
-from utils import (
+from discogs_rec.utils import (
     download_discogs_dataset,
     create_mappings,
     write_mappings,
     build_annoy_index,
+    clean_df,
 )
 
 
@@ -48,15 +49,13 @@ def main() -> None:
     download_discogs_dataset()
 
     data_path = Path("/data")  # mounted
-    df = pd.read_parquet(f"{data_path}/training_data/discogs_dataset.parquet")
-
+    df = pd.read_parquet(f"{data_path}/discogs_dataset.parquet")
+    df = df.drop(
+        columns=["is_master_release", "name_variations", "real_name", "format"]
+    )
     # clean duplicates and add derived features
     logger.info("Cleaning and transforming data..")
-    df_cleaned = df.drop_duplicates(
-        subset=["release_title", "label_name", "release_year", "catno"], keep="first"
-    )
-    df_cleaned["n_styles"] = df_cleaned["styles"].apply(len)
-
+    df_cleaned = clean_df(df)
     args = arg_parse()
 
     cols_to_impute = [
@@ -68,6 +67,7 @@ def main() -> None:
         "median",
         "high",
         "want_to_have_ratio",
+        "video_count",
     ]
 
     # process features

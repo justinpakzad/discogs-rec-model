@@ -5,13 +5,13 @@ from pathlib import Path
 from annoy import AnnoyIndex
 
 
-DATA_PATH = Path.cwd() / "data"
+DATA_PATH = Path(__file__).parents[1] / "data"
 
 annoy_index = None
 
 
 def get_n_components():
-    with open(DATA_PATH / "config" / "n_components.txt", "r") as f:
+    with open(DATA_PATH / "n_components.txt", "r") as f:
         n = int(f.read().strip())
     return n
 
@@ -38,8 +38,8 @@ def load_mappings():
         dict: Dictionary with mapping names as keys and loaded data as values
     """
     mappings = {}
-    for item in Path(DATA_PATH / "mappings").iterdir():
-        if not item.name.startswith("."):
+    for item in Path(DATA_PATH).iterdir():
+        if not item.name.startswith(".") and item.name.endswith(".pkl"):
             with open(item, "rb") as f:
                 mappings[item.name.split(".")[0]] = pickle.load(f)
 
@@ -51,7 +51,7 @@ def load_annoy_index(n: int):
     Load the Annoy index from disk
     """
     global annoy_index
-    ann_file_path = str(DATA_PATH / "ann_files" / "discogs_rec.ann")
+    ann_file_path = str(DATA_PATH / "discogs_rec.ann")
     f = n
     annoy_index = AnnoyIndex(f, "angular")
     annoy_index.load(str(ann_file_path))
@@ -111,18 +111,29 @@ def get_n_nearest_recs(url: str, mappings: dict, n_recs: int = 5):
     indices = get_nearest_indices(
         release_id=release_id, n_recs=n_recs, mappings=mappings
     )
+
     if not indices:
         raise ValueError("Sorry this release is out of the scope of our model!")
     seen_artists = set()
     recs = []
     for i, idx in enumerate(indices[1:], start=1):
-        artist = mappings.get("idx_to_artist").get(idx)
-        title = mappings.get("idx_to_title").get(idx)
-        release_id = mappings.get("idx_to_release_id").get(idx)
+
+        release_metadata = mappings.get("idx_to_release_info").get(idx)
+        artist = release_metadata.get("artist_name")
+        title = release_metadata.get("release_title")
+        release_id = release_metadata.get("release_id")
+        label = release_metadata.get("label_name")
         url = f"https://www.discogs.com/release/{release_id}"
         if artist in seen_artists:
             continue
-        recs.append({"artist": artist, "title": title, "url": url})
+        recs.append(
+            {
+                "artist": artist,
+                "title": title,
+                "label": label,
+                "url": url,
+            }
+        )
         seen_artists.add(artist.strip().lower())
         if i >= n_recs:
             break
@@ -147,6 +158,3 @@ def main():
 if __name__ == "__main__":
     recs = main()
     print(recs)
-
-
-# https://www.discogs.com/release/335130-FL-Untitled",

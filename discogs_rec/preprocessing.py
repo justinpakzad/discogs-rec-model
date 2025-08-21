@@ -19,9 +19,9 @@ weights_dict = {
     "high": 0.4,
     "ratings": 0.1,
     "video_count": 0.1,
-    "n_styles": 0.1,
-    "country": 0.5,
-    "release_year": 0.9,
+    "n_styles": 0.4,
+    "country": 0.7,
+    "release_year": 1.0,
     "styles": 1.0,
 }
 
@@ -161,7 +161,7 @@ def write_n_components(n_components: int) -> None:
     """
     # Write the n_components to a txt file
     # so that the annoy f parameter can be dynamically updated instead of a fixed 150
-    config_path = Path("/data/config")
+    config_path = Path("/data")
     config_path.mkdir(parents=True, exist_ok=True)
     with open(f"{config_path}/n_components.txt", "w") as f:
         f.write(str(n_components))

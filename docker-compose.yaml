@@ -1,10 +1,10 @@
 services:
   discogs_rec_model:
-      build: .
-      volumes:
-        - ./data:/data
-        - ./discogs_rec:/discogs_rec
-      environment:
-        PYTHONPATH: /discogs_rec
-      command: ["python", "main.py"]
-  
+    build: .
+    volumes:
+      - ./data:/data
+    command: ["python", "-m", "discogs_rec.main"]
+    
+  tests:
+    build: .
+    command: ["pytest", "tests", "-vv"]

@@ -4,3 +4,4 @@
 .DS_Store   
 discogs_rec/config
 .pytest_cache
+**.ipynb
